@@ -17,7 +17,6 @@ require_once DRUPAL_ROOT . '/phpQuery/phpQuery.php';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
 // Create Table if not exist
-// $db_query("create table rss_article (hash char(32), src_link text, title text, status int)");
 
 $table_scheme = array(
     'description' => 'RSS Articles List',
@@ -33,7 +32,7 @@ if (!db_table_exists('rss_article')) {
     db_create_table('rss_article', $table_scheme);
 }
 
-//Define RSS feeds list
+// Define RSS feeds list
 //$feeds[] = array("id" => "do", "url" => "http://www.digitaloffroad.com/feed/");
 //$feeds[] = array("id" => "e3", "url" => "http://www.enduro360.com/feed/");
 $feeds[] = array("id" => "e3", url => "test.rss");
@@ -82,87 +81,83 @@ foreach ($feeds as $feed) { // Collect articles
         $hash = $article->hash;
         //$html = file_get_contents($article->src_link);
         $html = file_get_contents("test.html");
-//        $doc = phpQuery::newDocument($html);
         $doc = phpQuery::newDocumentFileHTML("test.html", 'utf-8');
         if ($article->rss_id == 'e3') {
             $doc->find("div.yarpp-related")->remove();
             $doc->find("div.addtoany_share_save_container")->remove();
             $doc->find("small")->remove();
             $content = $doc->find("div.singlepost > div > div");
-//            print $content;
         }
-	$img_dir = DRUPAL_ROOT."/sites/default/files/img/$hash/";
-	// Replace <img> by downloaded copies
-	$img_doc = pq($content);
-	$imgs = $img_doc->find("img");
-	foreach ($imgs as $img){
-		$i = pq($img);
-		$src = $i->attr('src');
-		$ext = pathinfo($src, PATHINFO_EXTENSION);
-		$dst = $img_dir.md5($src).'.'.$ext;
-		//copy($src, $dst);
-		$dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
-		$i->attr('src', $dst);
-		$i->removeAttr('class');
-		$i->removeAttr('onclick');
-	}
-	// Replace anchors
-	$anchors = $img_doc->find("a");
-	foreach ($anchors as $anchor){
-		$i = pq($anchor);
-		$src = $i->attr('href');
-		$ext = pathinfo($src, PATHINFO_EXTENSION);
-		if ((strtolower($ext) == 'jpg') or (strtolower($ext) == 'jpeg')) {
-		    $dst = $img_dir.md5($src).'.'.$ext;
-		    //copy($src, $dst);
-		    $dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
-		    $i->attr('href', $dst);
-		    $i->removeAttr('class');
-		    $i->removeAttr('onclick');
-		}
-	}
-	$content->find("style")->remove();
-	
-	$body = utf8_decode($content->html());
-//	$translated = gtranslate($body);
-		
-	print $body;
-	
-	/* ----------------------------------------------
-	** Create Node
-	**-----------------------------------------------
-	*/
-	$node = new stdClass(); // Create a new node object
-	$node->type = "article"; // Or page, or whatever content type you like
-	node_object_prepare($node); // Set some default values
-	// If you update an existing node instead of creating a new one,
-	// comment out the three lines above and uncomment the following:
-	// $node = node_load($nid); // ...where $nid is the node id
-	
-	$node->title    = $article->title;
-	$node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
-	
-	$node->uid = 1; // UID of the author of the node; or use $node->name
-	
-	$node->body[$node->language][0]['value']   = $translated;
-	$node->body[$node->language][0]['summary'] = text_summary($translated);
-	$node->body[$node->language][0]['format']  = 'full_html';
-	
-	// I prefer using pathauto, which would override the below path
-	$path = 'node_created_on' . date('YmdHis');
-	$node->path = array('alias' => $path);
-	
-	/*if($node = node_submit($node)) { // Prepare node for saving
-	    node_save($node);
-	    echo "Node with nid " . $node->nid . " saved!\n";
-	}*/
-	
-	//print $imgs;
-/*	if (mkdir($img_dir)){
 
-	} else {
-		print "Can't create directory $img_dir";
-	}*/
+		$img_dir = DRUPAL_ROOT."/sites/default/files/img/$hash/";
+		if (mkdir($img_dir)){
+			$img_doc = pq($content);
+			$imgs = $img_doc->find("img");
+			foreach ($imgs as $img){
+				$i = pq($img);
+				$src = $i->attr('src');
+				$ext = pathinfo($src, PATHINFO_EXTENSION);
+				$dst = $img_dir.md5($src).'.'.$ext;
+				//copy($src, $dst);
+				$dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
+				$i->attr('src', $dst);
+				$i->removeAttr('class');
+				$i->removeAttr('onclick');
+			}
+			// Replace anchors
+			$anchors = $img_doc->find("a");
+			foreach ($anchors as $anchor){
+				$i = pq($anchor);
+				$src = $i->attr('href');
+				$ext = pathinfo($src, PATHINFO_EXTENSION);
+				if ((strtolower($ext) == 'jpg') or (strtolower($ext) == 'jpeg')) {
+				    $dst = $img_dir.md5($src).'.'.$ext;
+				    //copy($src, $dst);
+				    $dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
+				    $i->attr('href', $dst);
+				    $i->removeAttr('class');
+				    $i->removeAttr('onclick');
+				}
+			}
+			$content->find("style")->remove();
+			
+			$body = utf8_decode($content->html());
+		//	$translated = gtranslate($body);
+				
+			print $body;
+			
+			/* ----------------------------------------------
+			** Create Node
+			**-----------------------------------------------
+			*/
+			$node = new stdClass(); // Create a new node object
+			$node->type = "article"; // Or page, or whatever content type you like
+			node_object_prepare($node); // Set some default values
+			// If you update an existing node instead of creating a new one,
+			// comment out the three lines above and uncomment the following:
+			// $node = node_load($nid); // ...where $nid is the node id
+			
+			$node->title    = $article->title;
+			$node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+			
+			$node->uid = 1; // UID of the author of the node; or use $node->name
+			
+			$node->body[$node->language][0]['value']   = $body;
+			$node->body[$node->language][0]['summary'] = text_summary($translated);
+			$node->body[$node->language][0]['format']  = 'full_html';
+			
+			// I prefer using pathauto, which would override the below path
+			$path = 'node_created_on' . date('YmdHis');
+			$node->path = array('alias' => $path);
+			
+			if($node = node_submit($node)) { // Prepare node for saving
+			    node_save($node);
+			    $db_query('update rss_article set status=1 where hash = :hash', array(':hash' => $article->hash));
+			    echo "Node with nid " . $node->nid . " saved!\n";
+			}
+		} else {
+			print "Can't create directory $img_dir";
+		}
     }
 }
 ?>
