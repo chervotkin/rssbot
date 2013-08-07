@@ -78,7 +78,7 @@
     }
     
     function gtranslate($text){
-        return "fake";
+        //return "fake";
         $yourApiKey = 'AIzaSyCAwq3Ccx_V5h3ByYMOl48bpMOElqBj57s';
         $sourceData = $text;
         $source = 'en';

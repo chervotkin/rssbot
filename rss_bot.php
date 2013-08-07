@@ -34,8 +34,8 @@ if (!db_table_exists('rss_article')) {
 
 // Define RSS feeds list
 //$feeds[] = array("id" => "do", "url" => "http://www.digitaloffroad.com/feed/");
-//$feeds[] = array("id" => "e3", "url" => "http://www.enduro360.com/feed/");
-$feeds[] = array("id" => "e3", url => "test.rss");
+$feeds[] = array("id" => "e3", "url" => "http://www.enduro360.com/feed/");
+//$feeds[] = array("id" => "e3", url => "test.rss");
 
 $articles = array();
 
@@ -76,12 +76,13 @@ foreach ($feeds as $feed) { // Collect articles
      * + translate text
      * + add node to drupal
      */
-    $articles = db_query("select * from rss_article where status = 0 limit 1");
+    $articles = db_query("select * from rss_article where status = 0");
     foreach ($articles as $article){
+    	print $article->title;
+    	print "\n";
         $hash = $article->hash;
-        //$html = file_get_contents($article->src_link);
-        $html = file_get_contents("test.html");
-        $doc = phpQuery::newDocumentFileHTML("test.html", 'utf-8');
+        $html = file_get_contents($article->src_link);
+        $doc = phpQuery::newDocumentHTML($html, 'utf-8');
         if ($article->rss_id == 'e3') {
             $doc->find("div.yarpp-related")->remove();
             $doc->find("div.addtoany_share_save_container")->remove();
@@ -98,7 +99,7 @@ foreach ($feeds as $feed) { // Collect articles
 				$src = $i->attr('src');
 				$ext = pathinfo($src, PATHINFO_EXTENSION);
 				$dst = $img_dir.md5($src).'.'.$ext;
-				//copy($src, $dst);
+				copy($src, $dst);
 				$dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
 				$i->attr('src', $dst);
 				$i->removeAttr('class');
@@ -120,11 +121,13 @@ foreach ($feeds as $feed) { // Collect articles
 				}
 			}
 			$content->find("style")->remove();
-			
-			$body = utf8_decode($content->html());
+//			print $content->html();
+//			$body = utf8_decode($content->html());
+			$body = $content->html();
+			$translated = $body;
 		//	$translated = gtranslate($body);
 				
-			print $body;
+			//print $body;
 			
 			/* ----------------------------------------------
 			** Create Node
@@ -137,23 +140,26 @@ foreach ($feeds as $feed) { // Collect articles
 			// comment out the three lines above and uncomment the following:
 			// $node = node_load($nid); // ...where $nid is the node id
 			
-			$node->title    = $article->title;
+			$node->title    = gtranslate($article->title);
 			$node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
 			
 			$node->uid = 1; // UID of the author of the node; or use $node->name
 			
-			$node->body[$node->language][0]['value']   = $body;
+			$node->body[$node->language][0]['value']   = $translated;
 			$node->body[$node->language][0]['summary'] = text_summary($translated);
 			$node->body[$node->language][0]['format']  = 'full_html';
 			
 			// I prefer using pathauto, which would override the below path
-			$path = 'node_created_on' . date('YmdHis');
+			$path = 'node_created_on_' . date('YmdHis');
 			$node->path = array('alias' => $path);
 			
 			if($node = node_submit($node)) { // Prepare node for saving
 			    node_save($node);
-//			    $db_query('update rss_article set status=1 where hash = :hash', array(':hash' => $article->hash));
+			    $query = "update rss_article set status=1 where hash = '".$article->hash."'";
+			    //print $query;
+			    db_query($query);
 			    echo "Node with nid " . $node->nid . " saved!\n";
+			    sleep(5);
 			}
 		} else {
 			print "Can't create directory $img_dir";
