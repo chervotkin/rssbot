@@ -12,7 +12,7 @@ if ( !isset( $_SERVER['REMOTE_ADDR'] ) ) {
 
 require_once 'translator.php';
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
-require_once DRUPAL_ROOT . '/phpQuery/phpQuery.php';
+require_once 'phpQuery/phpQuery.php';
 
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
@@ -90,7 +90,7 @@ foreach ($feeds as $feed) { // Collect articles
         }
 
 		$img_dir = DRUPAL_ROOT."/sites/default/files/img/$hash/";
-		if (mkdir($img_dir)){
+		if (file_exists($img_dir) or mkdir($img_dir)){
 			$img_doc = pq($content);
 			$imgs = $img_doc->find("img");
 			foreach ($imgs as $img){
@@ -112,7 +112,7 @@ foreach ($feeds as $feed) { // Collect articles
 				$ext = pathinfo($src, PATHINFO_EXTENSION);
 				if ((strtolower($ext) == 'jpg') or (strtolower($ext) == 'jpeg')) {
 				    $dst = $img_dir.md5($src).'.'.$ext;
-				    //copy($src, $dst);
+				    copy($src, $dst);
 				    $dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
 				    $i->attr('href', $dst);
 				    $i->removeAttr('class');
@@ -152,7 +152,7 @@ foreach ($feeds as $feed) { // Collect articles
 			
 			if($node = node_submit($node)) { // Prepare node for saving
 			    node_save($node);
-			    $db_query('update rss_article set status=1 where hash = :hash', array(':hash' => $article->hash));
+//			    $db_query('update rss_article set status=1 where hash = :hash', array(':hash' => $article->hash));
 			    echo "Node with nid " . $node->nid . " saved!\n";
 			}
 		} else {
