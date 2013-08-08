@@ -10,6 +10,7 @@ if ( !isset( $_SERVER['REMOTE_ADDR'] ) ) {
   $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 }
 
+require_once 'rss_bot_settings.php';
 require_once 'translator.php';
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 require_once 'phpQuery/phpQuery.php';
@@ -79,9 +80,10 @@ foreach ($feeds as $feed) { // Collect articles
     $articles = db_query("select * from rss_article where status = 0");
     foreach ($articles as $article){
     	print $article->title;
-    	print "\n";
+//    	print "\n";
         $hash = $article->hash;
         $html = file_get_contents($article->src_link);
+	$html = html_entity_decode($html,ENT_QUOTES,'UTF-8');
         $doc = phpQuery::newDocumentHTML($html, 'utf-8');
         if ($article->rss_id == 'e3') {
             $doc->find("div.yarpp-related")->remove();
@@ -100,7 +102,7 @@ foreach ($feeds as $feed) { // Collect articles
 				$ext = pathinfo($src, PATHINFO_EXTENSION);
 				$dst = $img_dir.md5($src).'.'.$ext;
 				copy($src, $dst);
-				$dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
+				$dst = "http://".$srv_url."/sites/default/files/img/$hash/".md5($src).".".$ext;
 				$i->attr('src', $dst);
 				$i->removeAttr('class');
 				$i->removeAttr('onclick');
@@ -114,7 +116,7 @@ foreach ($feeds as $feed) { // Collect articles
 				if ((strtolower($ext) == 'jpg') or (strtolower($ext) == 'jpeg')) {
 				    $dst = $img_dir.md5($src).'.'.$ext;
 				    copy($src, $dst);
-				    $dst = "http://".$_SERVER['REMOTE_ADDR']."/sites/default/files/img/$hash/".md5($src).".".$ext;
+				    $dst = "http://".$srv_url."/sites/default/files/img/$hash/".md5($src).".".$ext;
 				    $i->attr('href', $dst);
 				    $i->removeAttr('class');
 				    $i->removeAttr('onclick');
@@ -122,12 +124,12 @@ foreach ($feeds as $feed) { // Collect articles
 			}
 			$content->find("style")->remove();
 //			print $content->html();
-//			$body = utf8_decode($content->html());
-			$body = $content->html();
-			$translated = $body;
-		//	$translated = gtranslate($body);
+			$body = utf8_decode($content->html());
+//			$body = $content->html();
+//			$translated = $body;
+			$translated = gtranslate($body);
 				
-			//print $body;
+//			print $translated;
 			
 			/* ----------------------------------------------
 			** Create Node
@@ -158,7 +160,7 @@ foreach ($feeds as $feed) { // Collect articles
 			    $query = "update rss_article set status=1 where hash = '".$article->hash."'";
 			    //print $query;
 			    db_query($query);
-			    echo "Node with nid " . $node->nid . " saved!\n";
+			    echo "  Node with nid " . $node->nid . " saved!\n";
 			    sleep(5);
 			}
 		} else {
