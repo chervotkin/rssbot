@@ -85,12 +85,25 @@ foreach ($feeds as $feed) { // Collect articles
         $html = file_get_contents($article->src_link);
 	$html = html_entity_decode($html,ENT_QUOTES,'UTF-8');
         $doc = phpQuery::newDocumentHTML($html, 'utf-8');
-        if ($article->rss_id == 'e3') {
+        if ($article->rss_id == 'e3') { // If souce site is http://www.enduro360.com
             $doc->find("div.yarpp-related")->remove();
             $doc->find("div.addtoany_share_save_container")->remove();
             $doc->find("small")->remove();
             $content = $doc->find("div.singlepost > div > div");
+        }  elseif ($article->rss_id == 'do') { // If cource site is http://www.digitaloffroad.com
+        	$content = $doc->find('div[itemprop="articleBody"]');
+        	if ($content == ''){ // Try grab video content
+        		$content = $doc->find("div.video");
+        	}
         }
+
+        $content->find('script')->remove(); // Remove any scripts
+
+        // Check there is video
+        $is_video = 0;
+        if (strpos($content->html(),'youtube') !== false) {
+    		$is_video = 1;
+		}
 
 		$img_dir = DRUPAL_ROOT."/sites/default/files/img/$hash/";
 		if (file_exists($img_dir) or mkdir($img_dir)){
@@ -150,10 +163,12 @@ foreach ($feeds as $feed) { // Collect articles
 			$node->body[$node->language][0]['value']   = $translated;
 			$node->body[$node->language][0]['summary'] = text_summary($translated);
 			$node->body[$node->language][0]['format']  = 'full_html';
-			
+			if ($is_video == 1){
+				$node->field_tags[$node->language][]['tid'] = 2;
+			}
 			// I prefer using pathauto, which would override the below path
 			$path = 'node_created_on_' . date('YmdHis');
-			$node->path = array('alias' => $path);
+			//$node->path = array('alias' => $path);
 			
 			if($node = node_submit($node)) { // Prepare node for saving
 			    node_save($node);
