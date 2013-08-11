@@ -34,7 +34,7 @@ if (!db_table_exists('rss_article')) {
 }
 
 // Define RSS feeds list
-//$feeds[] = array("id" => "do", "url" => "http://www.digitaloffroad.com/feed/");
+$feeds[] = array("id" => "do", "url" => "http://www.digitaloffroad.com/feed/");
 $feeds[] = array("id" => "e3", "url" => "http://www.enduro360.com/feed/");
 //$feeds[] = array("id" => "e3", url => "test.rss");
 
