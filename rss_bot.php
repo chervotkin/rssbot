@@ -91,7 +91,12 @@ foreach ($feeds as $feed) { // Collect articles
             $doc->find("small")->remove();
             $content = $doc->find("div.singlepost > div > div");
         }  elseif ($article->rss_id == 'do') { // If cource site is http://www.digitaloffroad.com
-        	$content = $doc->find('div[itemprop="articleBody"]');
+            $content = $doc->find("article");
+ 			$content->find("style")->remove();
+			$content->find("h1")->remove();
+			$content->find("like")->remove();
+			$content->find("div.clearfix")->remove();
+			$content->find("div.title-block")->remove();
         	if ($content == ''){ // Try grab video content
         		$content = $doc->find("div.video");
         	}
