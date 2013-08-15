@@ -178,7 +178,7 @@ foreach ($feeds as $feed) { // Collect articles
 			
 			if($node = node_submit($node)) { // Prepare node for saving
 			    node_save($node);
-			    $query = "update rss_article set status=1 nid=".$node->nid." where hash = '".$article->hash."'";
+			    $query = "update rss_article set status=1, nid=".strval($node->nid)." where hash = '".$article->hash."'";
 			    //print $query;
 			    db_query($query);
 			    echo "  Node with nid " . $node->nid . " saved!\n";
