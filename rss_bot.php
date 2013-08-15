@@ -63,7 +63,8 @@ foreach ($feeds as $feed) { // Collect articles
                 'src_link' => $link,
                 'title' => $title,
                 'rss_id' => $rss_id,
-                'status' => 0
+                'status' => 0,
+                'nid' => 1
             )) -> execute();
         }
         //break;
@@ -177,7 +178,7 @@ foreach ($feeds as $feed) { // Collect articles
 			
 			if($node = node_submit($node)) { // Prepare node for saving
 			    node_save($node);
-			    $query = "update rss_article set status=1 where hash = '".$article->hash."'";
+			    $query = "update rss_article set status=1 nid=".$node->nid." where hash = '".$article->hash."'";
 			    //print $query;
 			    db_query($query);
 			    echo "  Node with nid " . $node->nid . " saved!\n";
