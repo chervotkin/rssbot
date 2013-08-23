@@ -39,8 +39,8 @@ $feeds[] = array("id" => "e3", "url" => "http://www.enduro360.com/feed/");
 
 $links[] = array(
 	"id" => "e3",
-	"url" => "http://www.enduro360.com/2013/06/30/featured/july-trophy-girl-celebration/",
-	"title" => "July Trophy Girl Celebration!");
+	"url" => "http://www.enduro360.com/2013/04/01/featured/april-trophy-girl-alanna/",
+	"title" => "Alanna");
 
 
 $articles = array();

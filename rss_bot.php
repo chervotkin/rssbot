@@ -165,6 +165,7 @@ foreach ($feeds as $feed) { // Collect articles
 			$node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
 			
 			$node->uid = 1; // UID of the author of the node; or use $node->name
+			$node->status = $node_status_default; 
 			
 			$node->body[$node->language][0]['value']   = $translated;
 			$node->body[$node->language][0]['summary'] = text_summary($translated);
