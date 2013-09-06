@@ -101,6 +101,21 @@ foreach ($feeds as $feed) { // Collect articles
         	if ($content == ''){ // Try grab video content
         		$content = $doc->find("div.video");
         	}
+        }  elseif ($article->rss_id == 'dr') { // If cource site is http://www.dirtrider.com
+            $content = $doc->find("article");
+            $content->find("style")->remove();
+            $content->find("script")->remove();
+            $content->find("noscript")->remove();
+            $content->find("header")->remove();
+	    $content->find("h1")->remove();
+	    $content->find("like")->remove();
+            $content->find("div.image")->remove();
+            $content->find("div.add-this")->remove();
+            $content->find("div.fb-like-box")->remove();
+            $content->find("ul.current-issue")->remove();
+	    $content->find("div a.newsletter")->parent()->remove();
+            $content->find("h5")->remove();
+	    $content->find("h3")->remove();
         }
 
         $content->find('script')->remove(); // Remove any scripts
